@@ -55,7 +55,7 @@ pipeline {
         networks:
             notery-test-net:
                 name: notery-test-net  # Unique network name
-		"""
+		""".stripIndent()
 
 		// Start test stack with override (fixed line continuation)
 		bat """

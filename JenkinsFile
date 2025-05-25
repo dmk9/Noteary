@@ -27,7 +27,7 @@ pipeline {
       steps {
         script {
           writeFile file: '.env.runtime', text: """
-            MONGODB_URI=mongodb://mongo:27017/notesdb
+            MONGODB_URI=mongodb://localhost:27017/notesdb
             JWT_SECRET=${env.JWT_SECRET}
           """.stripIndent()
         }
@@ -45,7 +45,7 @@ pipeline {
       steps {
 		script {
 		writeFile file: 'backend/.env.test', text: """
-			MONGODB_URI=mongodb://mongo:27017/notesdb
+			MONGODB_URI=mongodb://localhost:27017/notesdb
 			JWT_SECRET=${env.JWT_SECRET}
 		""".stripIndent()
 		}
@@ -125,7 +125,7 @@ pipeline {
       echo "Something went wrong in the pipeline."
     }
 	always {
-      bat 'del .env.runtime' 
-    }
+      bat 'del .env.runtime'
+      }
   }
 }

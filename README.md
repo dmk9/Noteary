@@ -1,1 +1,2 @@
-# full-stack-crud-app
+SIT753 Project
+"Noteary" A note taking app built by Faith 

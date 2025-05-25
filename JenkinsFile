@@ -45,16 +45,16 @@ pipeline {
 	steps {
 		script {
 		writeFile file: 'docker-compose.test.yaml', text: """
-			services:
-        mongo:
-          ports:
-          - "27018:27017"  # Use alternate port for testing
-          networks:
-          - notery-test-net  # Isolate test network
+	    services:
+            mongo:
+                ports:
+                    - "27018:27017"  # Use alternate port for testing
+            networks:
+                - notery-test-net  # Isolate test network
 
-      networks:
-        notery-test-net:
-          name: notery-test-net  # Unique network name
+        networks:
+            notery-test-net:
+                name: notery-test-net  # Unique network name
 		"""
 
 		// Start test stack with override (fixed line continuation)
@@ -72,7 +72,7 @@ pipeline {
 		"""
 
 		// Configure tests to use Docker network
-		writeFhile file: 'backend/.env.test', text: """
+		writeFile file: 'backend/.env.test', text: """
 			MONGODB_URI=mongodb://mongo:27017/notesdb  # Connect via Docker network
 			JWT_SECRET=${env.JWT_SECRET}
 		"""
@@ -139,10 +139,10 @@ pipeline {
       steps {
         echo "Tagging the release..."
         script {
-          def commitId = bat(script: "git rev-parse --batort HEAD", returnStdout: true).trim()
+          def commitId = bat(script: "git rev-parse --short HEAD", returnStdout: true).trim()
           def tag = "release-${commitId}"
           bat "git tag ${tag}"
-          bat "git pubat origin ${tag}"
+          bat "git push origin ${tag}"
         }
       }
     }

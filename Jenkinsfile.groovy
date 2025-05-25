@@ -9,6 +9,24 @@ pipeline {
   }
 
   stages {
+    stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+    stage('Checkout') {
+            steps {
+                bat '"C:\\Program Files\\Git\\bin\\git.exe" clone https://github.com/Faithy847/Noteary .'
+                bat '"C:\\Program Files\\Git\\bin\\git.exe" checkout main'
+            }
+        }
+
+    stage('Install Dependencies') {
+            steps {
+                bat 'npm install'
+            }
+        }
 
     stage('Generate .env') {
       steps {

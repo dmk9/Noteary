@@ -19,7 +19,6 @@ pipeline {
             steps {
                 bat '"C:\\Program Files\\Git\\bin\\git.exe" clone https://github.com/Faithy847/Noteary .'
                 bat '"C:\\Program Files\\Git\\bin\\git.exe" checkout main'
-                ls
             }
         }
 
@@ -65,8 +64,7 @@ pipeline {
 			echo "Running lint in ${dirName}..."
 			dir(dirName) {
 			bat 'npm install eslint || true'
-			bat './node_modules/.bin/eslint . || echo "No linting errors or ESLint not configured"'
-			}
+			bat 'node_modules\\.bin\\eslint.cmd . || echo "No linting errors or ESLint not configured"'			}
 		}
 		}
 	}
@@ -125,7 +123,7 @@ pipeline {
       echo "Something went wrong in the pipeline."
     }
 	always {
-      bat 'del .env.runtime'
-      }
+      bat 'del .env.runtime' 
+    }
   }
 }

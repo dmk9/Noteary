@@ -78,21 +78,23 @@ pipeline {
 			dir(dirName) {
 			bat 'npm install'
 			bat 'npm audit || echo "Security scan complete (audit)"'
-      bat 'npm audit fix'
+			bat 'npm audit fix'
 			}
 		}
 		}
 	}
 	}
 
-    stage('Deploy') {
-      steps {
-        echo "Deploying the stack..."
-        bat 'docker-compose down || true'
-        bat 'docker-compose up -d --build'
+	stage('Deploy') {
+	steps {
+		echo "Deploying the stack..."
+		bat 'docker-compose down || true'
+		bat 'docker rm -f mongo || echo "No existing mongo container"'
+		bat 'docker container prune -f'
+		bat 'docker-compose up -d --build'
 		bat 'docker-compose -p ${COMPOSE_PROJECT_NAME} up -d'
-      }
-    }
+		}
+	}
 
     stage('Release') {
       steps {
@@ -124,7 +126,7 @@ pipeline {
       echo "Something went wrong in the pipeline."
     }
 	always {
-      bat 'del .env.runtime' 
+      bat 'del .env.runtime'
     }
   }
 }

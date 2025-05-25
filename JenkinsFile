@@ -44,7 +44,7 @@ pipeline {
 	stage('Test') {
 	steps {
 		script {
-		writeFile file: 'docker-compose.test.yml', text: """
+		writeFile file: 'docker-compose.test.yaml', text: """
 			services:
 			mongo:
 				ports:
@@ -60,8 +60,8 @@ pipeline {
 		// Start test stack with override (fixed line continuation)
 		bat """
 			docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} ^
-			-f docker-compose.yml ^
-			-f docker-compose.test.yml ^
+			-f docker-compose.yaml ^
+			-f docker-compose.test.yaml ^
 			up -d mongo
 		"""
 

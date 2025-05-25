@@ -46,15 +46,15 @@ pipeline {
 		script {
 		writeFile file: 'docker-compose.test.yaml', text: """
 			services:
-			mongo:
-				ports:
-				- "27018:27017"  # Use alternate port for testing
-				networks:
-				- notery-test-net  # Isolate test network
+        mongo:
+          ports:
+          - "27018:27017"  # Use alternate port for testing
+          networks:
+          - notery-test-net  # Isolate test network
 
-		networks:
-			notery-test-net:
-			name: notery-test-net  # Unique network name
+      networks:
+        notery-test-net:
+          name: notery-test-net  # Unique network name
 		"""
 
 		// Start test stack with override (fixed line continuation)
@@ -72,7 +72,7 @@ pipeline {
 		"""
 
 		// Configure tests to use Docker network
-		writeFile file: 'backend/.env.test', text: """
+		writeFhile file: 'backend/.env.test', text: """
 			MONGODB_URI=mongodb://mongo:27017/notesdb  # Connect via Docker network
 			JWT_SECRET=${env.JWT_SECRET}
 		"""
@@ -87,11 +87,11 @@ pipeline {
 		always {
 			bat """
 			docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} ^
-				-f docker-compose.yml ^
-				-f docker-compose.test.yml ^
+				-f docker-compose.yaml ^
+				-f docker-compose.test.yaml ^
 				down --remove-orphans -v
 			"""
-			bat 'del docker-compose.test.yml'
+			bat 'del docker-compose.test.yaml'
 		}
 		}
 	}

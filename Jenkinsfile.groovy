@@ -24,7 +24,7 @@ pipeline {
     stage('Build') {
       steps {
         echo "Building Docker images..."
-        sh 'docker-compose build'
+        bat 'docker-compose build'
       }
     }
 
@@ -33,8 +33,8 @@ pipeline {
         echo "Running backend tests..."
         dir("${BACKEND_DIR}") {
           // Add test framework (e.g., mocha, jest) if available
-          sh 'npm install'
-          sh 'npm test || echo "No tests defined yet"'
+          bat 'npm install'
+          bat 'npm test || echo "No tests defined yet"'
         }
       }
     }
@@ -45,8 +45,8 @@ pipeline {
 		['backend', 'frontend'].each { dirName ->
 			echo "Running lint in ${dirName}..."
 			dir(dirName) {
-			sh 'npm install eslint || true'
-			sh './node_modules/.bin/eslint . || echo "No linting errors or ESLint not configured"'
+			bat 'npm install eslint || true'
+			bat './node_modules/.bin/eslint . || echo "No linting errors or ESLint not configured"'
 			}
 		}
 		}
@@ -59,8 +59,8 @@ pipeline {
 		['backend', 'frontend'].each { dirName ->
 			echo "Running npm audit in ${dirName}..."
 			dir(dirName) {
-			sh 'npm install'
-			sh 'npm audit || echo "Security scan complete (audit)"'
+			bat 'npm install'
+			bat 'npm audit || echo "Security scan complete (audit)"'
 			}
 		}
 		}
@@ -70,9 +70,9 @@ pipeline {
     stage('Deploy') {
       steps {
         echo "Deploying the stack..."
-        sh 'docker-compose down || true'
-        sh 'docker-compose up -d --build'
-		sh 'docker-compose -p ${COMPOSE_PROJECT_NAME} up -d'
+        bat 'docker-compose down || true'
+        bat 'docker-compose up -d --build'
+		bat 'docker-compose -p ${COMPOSE_PROJECT_NAME} up -d'
       }
     }
 
@@ -80,10 +80,10 @@ pipeline {
       steps {
         echo "Tagging the release..."
         script {
-          def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+          def commitId = bat(script: "git rev-parse --batort HEAD", returnStdout: true).trim()
           def tag = "release-${commitId}"
-          sh "git tag ${tag}"
-          sh "git push origin ${tag}"
+          bat "git tag ${tag}"
+          bat "git pubat origin ${tag}"
         }
       }
     }
@@ -91,8 +91,8 @@ pipeline {
     stage('Monitoring') {
       steps {
         echo "Verifying service health..."
-        sh 'curl -f http://localhost:3000 || echo "Frontend may not be ready"'
-        sh 'curl -f http://localhost:5000 || echo "Backend may not be ready"'
+        bat 'curl -f http://localhost:3000 || echo "Frontend may not be ready"'
+        bat 'curl -f http://localhost:5000 || echo "Backend may not be ready"'
       }
     }
 
@@ -106,7 +106,7 @@ pipeline {
       echo "Something went wrong in the pipeline."
     }
 	always {
-      sh 'rm -f .env.runtime' 
-    }
-  }
+      bat 'del .env.runtime' 
+    }
+  }
 }

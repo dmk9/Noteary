@@ -24,7 +24,7 @@ pipeline {
     stage('Build') {
       steps {
         echo "Building Docker images..."
-        bat 'docker-compose build'
+        bat 'docker-compose -f docker-compose.yaml build'
       }
     }
 

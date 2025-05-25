@@ -300,9 +300,9 @@ pipeline {
 		// Create deployment-specific port override
 		writeFile file: 'docker-compose.deploy.yaml', text: """\
 	services:
-	mongo:
-		ports:
-		- "27017:27017"  # Add host port binding ONLY for deployment
+	  mongo:
+		  ports:
+		    - "27017:27017"  # Add host port binding ONLY for deployment
 	"""
 		
 		echo "Deploying production stack..."

@@ -29,3 +29,4 @@ app.listen(process.env.PORT || 5000, async () => {
 		console.log(err.message);
 	}
 });
+module.exports = app;

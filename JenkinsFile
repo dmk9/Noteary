@@ -44,28 +44,60 @@ pipeline {
 	stage('Test') {
 	steps {
 		script {
-		// Start test-specific MongoDB
-		bat "docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} up -d mongo"
-		
-		// Wait for MongoDB to be ready
-		bat "docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} exec mongo sh -c 'until mongosh --eval \"print(\"connected\")\"; do sleep 1; done'"
-		
-		// Write test environment file
+		writeFile file: 'docker-compose.test.yml', text: """
+			services:
+			mongo:
+				ports:
+				- "27018:27017"  # Use alternate port for testing
+				networks:
+				- notery-test-net  # Isolate test network
+
+		networks:
+			notery-test-net:
+			name: notery-test-net  # Unique network name
+		"""
+
+		// Start test stack with override (fixed line continuation)
+		bat """
+			docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} ^
+			-f docker-compose.yml ^
+			-f docker-compose.test.yml ^
+			up -d mongo
+		"""
+
+		// Wait for MongoDB (uses internal DNS)
+		bat """
+			docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} exec mongo ^
+			mongosh --eval "db.adminCommand('ping')" --quiet
+		"""
+
+		// Configure tests to use Docker network
 		writeFile file: 'backend/.env.test', text: """
-			MONGODB_URI=mongodb://mongo:27017/notesdb  // Use Docker's internal DNS
+			MONGODB_URI=mongodb://mongo:27017/notesdb  # Connect via Docker network
 			JWT_SECRET=${env.JWT_SECRET}
 		"""
 		}
-		
+
 		dir("${BACKEND_DIR}") {
 		bat 'npm install'
 		bat 'npm test || echo "No tests defined yet"'
 		}
-		
-		// Cleanup test containers
-		bat "docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} down --remove-orphans"
+
+		post {
+		always {
+			bat """
+			docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} ^
+				-f docker-compose.yml ^
+				-f docker-compose.test.yml ^
+				down --remove-orphans -v
+			"""
+			bat 'del docker-compose.test.yml'
+		}
+		}
 	}
 	}
+
+
 
 	stage('Code Quality') {
 	steps {
@@ -134,6 +166,6 @@ pipeline {
     }
 	always {
       bat 'del .env.runtime'
-    }
-  }
+      }
+	  }
 }

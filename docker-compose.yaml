@@ -1,9 +1,10 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mongo:
     image: mongo
-  
+    networks:
+      - notery-net
     ports:
       - "27017:27017"
     volumes:
@@ -12,6 +13,8 @@ services:
   backend:
     build:
       context: ./backend
+    networks:
+      - notery-net
     ports:
       - "5000:5000"
     environment:
@@ -30,3 +33,6 @@ services:
 
 volumes:
   mongo-data:
+
+networks:
+  notery-net:

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   mongo:
     image: mongo
-    container_name: mongo
+  
     ports:
       - "27017:27017"
     volumes:
@@ -12,7 +12,6 @@ services:
   backend:
     build:
       context: ./backend
-    container_name: backend
     ports:
       - "5000:5000"
     environment:
@@ -24,7 +23,6 @@ services:
   frontend:
     build:
       context: ./frontend
-    container_name: frontend
     ports:
       - "3000:80"
     depends_on:

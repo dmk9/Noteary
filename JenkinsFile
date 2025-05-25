@@ -3,6 +3,7 @@ pipeline {
 
   environment {
     COMPOSE_PROJECT_NAME = "notery"
+	TEST_COMPOSE_PROJECT_NAME = "notery-test"
     BACKEND_DIR = "backend"
     FRONTEND_DIR = "frontend"
 	JWT_SECRET = credentials('JWT_SECRET')
@@ -40,22 +41,31 @@ pipeline {
       }
     }
 
-    stage('Test') {
-      steps {
+	stage('Test') {
+	steps {
 		script {
+		// Start test-specific MongoDB
+		bat "docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} up -d mongo"
+		
+		// Wait for MongoDB to be ready
+		bat "docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} exec mongo sh -c 'until mongosh --eval \"print(\"connected\")\"; do sleep 1; done'"
+		
+		// Write test environment file
 		writeFile file: 'backend/.env.test', text: """
-			MONGODB_URI=mongodb://localhost:27017/notesdb
+			MONGODB_URI=mongodb://mongo:27017/notesdb  // Use Docker's internal DNS
 			JWT_SECRET=${env.JWT_SECRET}
-		""".stripIndent()
+		"""
 		}
-        echo "Running backend tests..."
-        dir("${BACKEND_DIR}") {
-          // Add test framework (e.g., mocha, jest) if available
-          bat 'npm install'
-          bat 'npm test || echo "No tests defined yet"'
-        }
-      }
-    }
+		
+		dir("${BACKEND_DIR}") {
+		bat 'npm install'
+		bat 'npm test || echo "No tests defined yet"'
+		}
+		
+		// Cleanup test containers
+		bat "docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} down --remove-orphans"
+	}
+	}
 
 	stage('Code Quality') {
 	steps {
@@ -88,14 +98,9 @@ pipeline {
 	stage('Deploy') {
 	steps {
 		echo "Deploying the stack..."
-		bat 'docker-compose down || true'
-		bat 'docker rm -f mongo || echo "No existing mongo container"'
-    bat 'docker rm -f backend || echo "No existing backend container"'
-		bat 'docker rm -f frontend || echo "No existing frontend container"'
-		bat 'docker container prune -f'
-		bat 'docker-compose up -d --build'
-		bat 'docker-compose -p ${COMPOSE_PROJECT_NAME} up -d'
-		}
+		bat "docker-compose -p ${env.COMPOSE_PROJECT_NAME} down --remove-orphans || true"
+		bat "docker-compose -p ${env.COMPOSE_PROJECT_NAME} up -d --build"
+	}
 	}
 
     stage('Release') {

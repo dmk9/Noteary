@@ -2,14 +2,14 @@ pipeline {
   agent any
 
   environment {
-    COMPOSE_PROJECT_NAME = "noteary"
+    COMPOSE_PROJECT_NAME = "notery"
     BACKEND_DIR = "backend"
     FRONTEND_DIR = "frontend"
 	JWT_SECRET = credentials('JWT_SECRET')
   }
 
   stages {
-    stage('Clean Workspace') {
+	stage('Clean Workspace') {
             steps {
                 deleteDir()
             }
@@ -37,12 +37,18 @@ pipeline {
     stage('Build') {
       steps {
         echo "Building Docker images..."
-        bat 'docker-compose -f docker-compose.yaml build'
+        bat 'docker-compose build'
       }
     }
 
     stage('Test') {
       steps {
+		script {
+		writeFile file: 'backend/.env.test', text: """
+			MONGODB_URI=mongodb://mongo:27017/notesdb
+			JWT_SECRET=${env.JWT_SECRET}
+		""".stripIndent()
+		}
         echo "Running backend tests..."
         dir("${BACKEND_DIR}") {
           // Add test framework (e.g., mocha, jest) if available

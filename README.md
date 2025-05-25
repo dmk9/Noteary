@@ -1,2 +1,1 @@
-# SIT753 Project
-# "Noteary" A note taking app
+# full-stack-crud-app

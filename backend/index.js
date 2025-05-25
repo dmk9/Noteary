@@ -18,15 +18,15 @@ app.use("/notes", noteRouter)
 
 
 
+if (process.env.NODE_ENV !== "test") {
+	app.listen(process.env.PORT || 5000, async () => {
+		try {
+			await connection;
+			console.log("connected to db");
+		} catch (err) {
+			console.log(err.message);
+		}
+	});
+}
 
-
-
-app.listen(process.env.PORT || 5000, async () => {
-	try {
-		await connection;
-		console.log("connected to db");
-	} catch (err) {
-		console.log(err.message);
-	}
-});
 module.exports = app;

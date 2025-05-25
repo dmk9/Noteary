@@ -78,6 +78,7 @@ pipeline {
 			dir(dirName) {
 			bat 'npm install'
 			bat 'npm audit || echo "Security scan complete (audit)"'
+      bat 'npm audit fix'
 			}
 		}
 		}

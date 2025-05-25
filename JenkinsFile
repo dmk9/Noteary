@@ -47,8 +47,7 @@ pipeline {
 		writeFile file: 'docker-compose.test.yaml', text: """\
     services:
       mongo:
-        ports:
-          - "27018:27017"  # Use alternate port for testing
+        ports:[]
         networks:
           - notery-test-net
     

@@ -90,6 +90,8 @@ pipeline {
 		echo "Deploying the stack..."
 		bat 'docker-compose down || true'
 		bat 'docker rm -f mongo || echo "No existing mongo container"'
+    bat 'docker rm -f backend || echo "No existing backend container"'
+		bat 'docker rm -f frontend || echo "No existing frontend container"'
 		bat 'docker container prune -f'
 		bat 'docker-compose up -d --build'
 		bat 'docker-compose -p ${COMPOSE_PROJECT_NAME} up -d'

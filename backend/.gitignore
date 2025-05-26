@@ -1,2 +1,8 @@
 .env
+<<<<<<< HEAD
 node_modules/
+=======
+node_modules/
+.env.test
+.vscode/settings.json
+>>>>>>> d7f5d218404842f5ac2c0874eeb23096754f942a

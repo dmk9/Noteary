@@ -18,8 +18,8 @@ pipeline {
 
     stage('Checkout') {
             steps {
-                bat '"C:\\Program Files\\Git\\bin\\git.exe" clone https://github.com/Faithy847/Noteary .'
-                bat '"C:\\Program Files\\Git\\bin\\git.exe" checkout main'
+                sh '"C:\\Program Files\\Git\\bin\\git.exe" clone https://github.com/Faithy847/Noteary .'
+                sh '"C:\\Program Files\\Git\\bin\\git.exe" checkout main'
             }
         }
 
@@ -37,7 +37,7 @@ pipeline {
     stage('Build') {
       steps {
         echo "Building Docker images..."
-        bat 'docker-compose build'
+        sh 'docker-compose build'
       }
     }
 
@@ -57,7 +57,7 @@ pipeline {
     """
 
 		// Start test stack with override (fixed line continuation)
-		bat """
+		sh """
 			docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} ^
 			-f docker-compose.yaml ^
 			-f docker-compose.test.yaml ^
@@ -65,7 +65,7 @@ pipeline {
 		"""
 
 		// Wait for MongoDB (uses internal DNS)
-		bat """
+		sh """
 			docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} exec mongo ^
 			mongosh --eval "db.adminCommand('ping')" --quiet
 		"""
@@ -78,19 +78,19 @@ pipeline {
 		}
 
 		dir("${BACKEND_DIR}") {
-		bat 'npm install'
-		bat 'npm test || echo "No tests defined yet"'
+		sh 'npm install'
+		sh 'npm test || echo "No tests defined yet"'
 		}
 
 		post {
 		always {
-			bat """
+			sh """
 			docker-compose -p ${env.TEST_COMPOSE_PROJECT_NAME} ^
 				-f docker-compose.yaml ^
 				-f docker-compose.test.yaml ^
 				down --remove-orphans -v
 			"""
-			bat 'del docker-compose.test.yaml'
+			sh 'del docker-compose.test.yaml'
 		}
 		}
 	}
@@ -104,8 +104,8 @@ pipeline {
 		['backend', 'frontend'].each { dirName ->
 			echo "Running lint in ${dirName}..."
 			dir(dirName) {
-			bat 'npm install eslint || true'
-			bat 'node_modules\\.bin\\eslint.cmd . || echo "No linting errors or ESLint not configured"'			}
+			sh 'npm install eslint || true'
+			sh 'node_modules\\.bin\\eslint.cmd . || echo "No linting errors or ESLint not configured"'			}
 		}
 		}
 	}
@@ -117,9 +117,9 @@ pipeline {
 		['backend', 'frontend'].each { dirName ->
 			echo "Running npm audit in ${dirName}..."
 			dir(dirName) {
-			bat 'npm install'
-			bat 'npm audit || echo "Security scan complete (audit)"'
-			bat 'npm audit fix'
+			sh 'npm install'
+			sh 'npm audit || echo "Security scan complete (audit)"'
+			sh 'npm audit fix'
 			}
 		}
 		}
@@ -138,13 +138,13 @@ pipeline {
 	"""
 		
 		echo "Deploying production stack..."
-		bat """
+		sh """
 			docker-compose -p ${env.COMPOSE_PROJECT_NAME} ^
 			-f docker-compose.yaml ^
 			-f docker-compose.deploy.yaml ^
 			down --remove-orphans || true
 		"""
-		bat """
+		sh """
 			docker-compose -p ${env.COMPOSE_PROJECT_NAME} ^
 			-f docker-compose.yaml ^
 			-f docker-compose.deploy.yaml ^
@@ -152,7 +152,7 @@ pipeline {
 		"""
 		
 		// Cleanup override file after deployment
-		bat 'del docker-compose.deploy.yml'
+		sh 'del docker-compose.deploy.yml'
 		}
 	}
 	}
@@ -161,10 +161,10 @@ pipeline {
       steps {
         echo "Tagging the release..."
         script {
-          def commitId = bat(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+          def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
           def tag = "release-${commitId}"
-          bat "git tag ${tag}"
-          bat "git push origin ${tag}"
+          sh "git tag ${tag}"
+          sh "git push origin ${tag}"
         }
       }
     }
@@ -172,8 +172,8 @@ pipeline {
     stage('Monitoring') {
       steps {
         echo "Verifying service health..."
-        bat 'curl -f http://localhost:3000 || echo "Frontend may not be ready"'
-        bat 'curl -f http://localhost:5000 || echo "Backend may not be ready"'
+        sh 'curl -f http://localhost:3000 || echo "Frontend may not be ready"'
+        sh 'curl -f http://localhost:5000 || echo "Backend may not be ready"'
       }
     }
 
@@ -187,7 +187,7 @@ pipeline {
       echo "Something went wrong in the pipeline."
     }
 	always {
-      bat 'del .env.runtime'
+      sh 'del .env.runtime'
 	}
 	}
 }
